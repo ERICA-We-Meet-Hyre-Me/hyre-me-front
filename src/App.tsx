@@ -14,7 +14,7 @@ import ResumeViewer from './pages/ResumeViewer';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/hyre-me-front/">
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
