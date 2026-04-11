@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Noto Sans KR", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif KR", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+@layer base {
+  body {
+    @apply font-sans text-black bg-white antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6, .font-serif {
+    @apply font-serif tracking-tight;
+  }
+
+  /* Strict B&W overrides just in case */
+  * {
+    box-shadow: none !important;
+  }
+}
+
+@layer utilities {
+  .border-bw {
+    @apply border border-black;
+  }
+  .bg-bw-hover {
+    @apply hover:bg-black hover:text-white transition-colors duration-200;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    @apply bg-white text-black;
+  }
+  @page {
+    margin: 2cm;
+  }
+}
