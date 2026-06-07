@@ -13,6 +13,20 @@ import ResumeGenerator from './pages/ResumeGenerator';
 import GeneratedResumes from './pages/GeneratedResumes';
 import ResumeViewer from './pages/ResumeViewer';
 
+function HomeRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">로딩 중...</div>;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Landing />;
+}
+
 // Protected Route 컴포넌트
 function ProtectedRoute({ element }: { element: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,7 +46,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<HomeRoute />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
 
