@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FileText, Building2, LayoutDashboard, User, FileOutput, LogOut } from 'lucide-react';
+import { FileText, Building2, LayoutDashboard, User, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function MainLayout() {
@@ -11,7 +11,6 @@ export default function MainLayout() {
     { name: '대시보드', href: '/dashboard', icon: LayoutDashboard },
     { name: '내 포트폴리오', href: '/portfolio', icon: User },
     { name: '목표 기업 관리', href: '/companies', icon: Building2 },
-    { name: '자소서 생성', href: '/generate', icon: FileOutput },
     { name: '생성된 자소서', href: '/resumes', icon: FileText },
     { name: '마이페이지', href: '/mypage', icon: User },
   ];
