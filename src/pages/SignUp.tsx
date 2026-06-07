@@ -8,11 +8,18 @@ export default function SignUp() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      setLocalError('비밀번호가 서로 일치하지 않습니다.');
+      return;
+    }
+
     setIsLoading(true);
     setLocalError(null);
 
@@ -80,6 +87,21 @@ export default function SignUp() {
               placeholder="••••••••"
               required
               disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2" htmlFor="confirmPassword">비밀번호 확인</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full border border-black p-3 focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="••••••••"
+              required
+              disabled={isLoading}
+              autoComplete="new-password"
             />
           </div>
           

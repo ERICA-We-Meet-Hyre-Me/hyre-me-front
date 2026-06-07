@@ -5,6 +5,7 @@ export default function MyPage() {
   const { user, updateProfile } = useAuth();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -13,6 +14,7 @@ export default function MyPage() {
     if (user) {
       setName(user.name);
       setPassword('');
+      setConfirmPassword('');
       setMessage(null);
       setError(null);
     }
@@ -25,6 +27,11 @@ export default function MyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !hasChanges) {
+      return;
+    }
+
+    if (password.trim() && password !== confirmPassword) {
+      setError('새 비밀번호와 확인 값이 일치하지 않습니다.');
       return;
     }
 
@@ -128,6 +135,19 @@ export default function MyPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="변경하려면 입력하세요"
+              className="w-full border border-black p-3 focus:outline-none focus:ring-1 focus:ring-black"
+              disabled={isSaving}
+              autoComplete="new-password"
+            />
+            <label className="block text-sm font-medium mb-2 mt-4" htmlFor="confirmPassword">
+              새 비밀번호 확인
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="변경하려면 다시 입력하세요"
               className="w-full border border-black p-3 focus:outline-none focus:ring-1 focus:ring-black"
               disabled={isSaving}
               autoComplete="new-password"
