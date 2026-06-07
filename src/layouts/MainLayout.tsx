@@ -1,8 +1,11 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { FileText, Building2, LayoutDashboard, User, FileOutput } from 'lucide-react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { FileText, Building2, LayoutDashboard, User, FileOutput, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function MainLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navigation = [
     { name: '대시보드', href: '/dashboard', icon: LayoutDashboard },
@@ -12,6 +15,11 @@ export default function MainLayout() {
     { name: '생성된 자소서', href: '/resumes', icon: FileText },
     { name: '마이페이지', href: '/mypage', icon: User },
   ];
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen flex bg-white text-black">
@@ -39,10 +47,20 @@ export default function MainLayout() {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-black">
-          <Link to="/" className="text-sm text-gray-500 hover:text-black">
+        <div className="p-4 border-t border-black space-y-3">
+          {user && (
+            <div className="text-xs text-gray-600 px-2">
+              <div className="font-medium text-black">{user.name}</div>
+              <div className="truncate">{user.email}</div>
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 rounded transition-colors text-black"
+          >
+            <LogOut className="w-4 h-4" />
             로그아웃
-          </Link>
+          </button>
         </div>
       </aside>
 
