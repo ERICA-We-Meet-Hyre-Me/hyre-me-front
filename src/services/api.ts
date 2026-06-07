@@ -18,6 +18,11 @@ export interface UserResponse {
   created_at: string | null;
 }
 
+export interface UserUpdateRequest {
+  name?: string;
+  password?: string;
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;
@@ -26,7 +31,7 @@ export interface TokenResponse {
 }
 
 class ApiService {
-  private getAuthHeader() {
+  private getAuthHeader(): Record<string, string> {
     const token = localStorage.getItem('access_token');
     if (token) {
       return {
@@ -75,11 +80,6 @@ class ApiService {
 
   async getCurrentUser(): Promise<UserResponse> {
     const headers = this.getAuthHeader();
-    const token = localStorage.getItem('access_token');
-    
-    console.log('🔐 Authorization 요청:');
-    console.log('- Token:', token?.substring(0, 20) + '...');
-    console.log('- Headers:', headers);
     
     const response = await fetch(`${API_URL}/me`, {
       method: 'GET',
@@ -88,21 +88,47 @@ class ApiService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ 사용자 정보 조회 실패:');
-      console.error('- Status:', response.status);
-      console.error('- Status Text:', response.statusText);
-      console.error('- Response:', errorText);
       throw new Error(`사용자 정보를 불러올 수 없습니다. (${response.status} ${response.statusText})`);
     }
 
     return response.json();
   }
 
+  async updateCurrentUser(data: UserUpdateRequest): Promise<UserResponse> {
+    const headers = this.getAuthHeader();
+    const body = JSON.stringify(data);
+    const endpoints = [`${API_URL}/me`, `${API_URL}/users/me`];
+    let lastError: unknown = null;
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint, {
+          method: 'PATCH',
+          headers,
+          body,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || `요청에 실패했습니다. (${response.status})`);
+        }
+
+        const text = await response.text();
+        if (!text) {
+          return this.getCurrentUser();
+        }
+
+        return JSON.parse(text) as UserResponse;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error('사용자 정보를 저장할 수 없습니다.');
+  }
+
   async logout(): Promise<void> {
     localStorage.removeItem('access_token');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('user_name');
-    localStorage.removeItem('user_email');
   }
 }
 

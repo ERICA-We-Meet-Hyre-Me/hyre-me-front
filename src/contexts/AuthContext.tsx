@@ -7,6 +7,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
+  refreshUser: () => Promise<UserResponse | null>;
+  updateProfile: (data: { name?: string; password?: string }) => Promise<UserResponse>;
   logout: () => void;
   error: string | null;
 }
@@ -18,19 +20,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const syncCurrentUser = (userData: UserResponse) => {
+    setUser(userData);
+    return userData;
+  };
+
+  const refreshUser = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setUser(null);
+      return null;
+    }
+
+    try {
+      const userData = await apiService.getCurrentUser();
+      return syncCurrentUser(userData);
+    } catch (err) {
+      localStorage.removeItem('access_token');
+      setUser(null);
+      return null;
+    }
+  };
+
   // 초기 로드 시 토큰이 있으면 사용자 정보 불러오기
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        try {
-          const userData = await apiService.getCurrentUser();
-          setUser(userData);
-        } catch (err) {
-          localStorage.removeItem('access_token');
-          setUser(null);
-        }
-      }
+      await refreshUser();
       setIsLoading(false);
     };
 
@@ -44,13 +59,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // 토큰 저장
       localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('user_id', response.user_id.toString());
-      localStorage.setItem('user_name', response.name);
-      localStorage.setItem('user_email', email);
 
       // 사용자 정보 조회
       const userData = await apiService.getCurrentUser();
-      setUser(userData);
+      syncCurrentUser(userData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
       setError(errorMessage);
@@ -61,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (name: string, email: string, password: string) => {
     try {
       setError(null);
-      const userData = await apiService.register({ name, email, password });
+      await apiService.register({ name, email, password });
       
       // 회원가입 후 자동으로 로그인
       await login(email, password);
@@ -86,6 +98,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         signup,
+        refreshUser,
+        updateProfile: async (data) => {
+          const updatedUser = await apiService.updateCurrentUser(data);
+          syncCurrentUser(updatedUser);
+          return updatedUser;
+        },
         logout,
         error,
       }}
