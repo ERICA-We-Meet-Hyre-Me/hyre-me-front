@@ -74,13 +74,25 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<UserResponse> {
+    const headers = this.getAuthHeader();
+    const token = localStorage.getItem('access_token');
+    
+    console.log('🔐 Authorization 요청:');
+    console.log('- Token:', token?.substring(0, 20) + '...');
+    console.log('- Headers:', headers);
+    
     const response = await fetch(`${API_URL}/me`, {
       method: 'GET',
-      headers: this.getAuthHeader(),
+      headers: headers,
     });
 
     if (!response.ok) {
-      throw new Error('사용자 정보를 불러올 수 없습니다.');
+      const errorText = await response.text();
+      console.error('❌ 사용자 정보 조회 실패:');
+      console.error('- Status:', response.status);
+      console.error('- Status Text:', response.statusText);
+      console.error('- Response:', errorText);
+      throw new Error(`사용자 정보를 불러올 수 없습니다. (${response.status} ${response.statusText})`);
     }
 
     return response.json();

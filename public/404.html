@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecting...</title>
+  <script>
+    // GitHub Pages SPA 라우팅 처리
+    // 잘못된 경로로 접근했을 때 404.html이 서빙되므로,
+    // 실제 경로를 저장하고 index.html로 리다이렉트한다.
+    
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const redirect = pathSegments.slice(1).join('/');
+    
+    if (redirect) {
+      sessionStorage.redirect = '/' + redirect + window.location.search;
+    }
+    
+    window.location.href = '/';
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
