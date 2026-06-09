@@ -348,7 +348,7 @@ class ApiService {
   }
 
   async register(data: UserCreateRequest): Promise<UserResponse> {
-    return this.request<UserResponse>('/register', {
+    return this.request<UserResponse>('/api/auth/register', {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -356,7 +356,7 @@ class ApiService {
   }
 
   async login(data: UserLoginRequest): Promise<TokenResponse> {
-    return this.request<TokenResponse>('/login', {
+    return this.request<TokenResponse>('/api/auth/login', {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -364,14 +364,14 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<UserResponse> {
-    return this.request<UserResponse>('/me', {
+    return this.request<UserResponse>('/api/auth/me', {
       method: 'GET',
       headers: this.getAuthHeaders(false),
     });
   }
 
   async updateCurrentUser(data: UserUpdateRequest): Promise<UserResponse> {
-    return this.request<UserResponse>('/me', {
+    return this.request<UserResponse>('/api/auth/me', {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
