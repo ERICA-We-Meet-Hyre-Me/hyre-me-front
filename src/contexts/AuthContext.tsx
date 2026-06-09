@@ -26,8 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshUser = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!apiService.hasStoredSession()) {
       setUser(null);
       return null;
     }
@@ -36,11 +35,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData = await apiService.getCurrentUser();
       return syncCurrentUser(userData);
     } catch (err) {
-      localStorage.removeItem('access_token');
       setUser(null);
       return null;
     }
   };
+
+  useEffect(() => {
+    apiService.setAuthFailureHandler(() => {
+      setUser(null);
+      setError('로그인이 만료되었습니다. 다시 로그인해주세요.');
+    });
+
+    return () => {
+      apiService.setAuthFailureHandler(null);
+    };
+  }, []);
 
   // 초기 로드 시 토큰이 있으면 사용자 정보 불러오기
   useEffect(() => {
@@ -56,9 +65,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       const response = await apiService.login({ email, password });
-      
-      // 토큰 저장
-      localStorage.setItem('access_token', response.access_token);
+
+      apiService.storeTokens({
+        access_token: response.access_token,
+        refresh_token: response.refresh_token,
+      });
 
       // 사용자 정보 조회
       const userData = await apiService.getCurrentUser();
