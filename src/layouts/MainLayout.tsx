@@ -21,15 +21,15 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white text-black">
+    <div className="h-dvh flex overflow-hidden bg-white text-black">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-black flex flex-col no-print">
+      <aside className="w-64 border-r border-black flex h-full flex-col overflow-hidden no-print">
         <div className="h-16 flex items-center px-6 border-b border-black">
           <Link to="/dashboard" className="font-serif text-2xl font-bold tracking-tighter">
             hyre-me
           </Link>
         </div>
-        <nav className="flex-1 py-6 px-4 space-y-2">
+        <nav className="flex-1 min-h-0 overflow-y-auto py-6 px-4 space-y-2">
           {navigation.map((item) => {
             const isActive = location.pathname.startsWith(item.href);
             return (
@@ -64,8 +64,8 @@ export default function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-8">
+      <main className="flex-1 flex min-h-0 min-w-0 flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-y-auto p-8">
           <div className="max-w-5xl mx-auto">
             <Outlet />
           </div>
