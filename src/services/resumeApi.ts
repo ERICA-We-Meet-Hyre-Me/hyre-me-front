@@ -1,4 +1,4 @@
-import { ApiClient, GeneratedResumeResponse, GeneratedResumeStatusResponse, ResumeCompanyOption } from './apiClient';
+import { ApiClient, GeneratedResumeResponse, GeneratedResumeStatusResponse, ResumeCompanyOption, GenerateResumeRequest } from './apiClient';
 
 export function createResumeApi(client: ApiClient) {
   const authNoJson = { auth: true, json: false };
@@ -32,6 +32,13 @@ export function createResumeApi(client: ApiClient) {
       return client.requestNoContent(`/api/resumes/${resumeId}`, {
         method: 'DELETE',
       }, authNoJson);
+    },
+
+    async generateResume(payload: GenerateResumeRequest): Promise<GeneratedResumeResponse> {
+      return client.request<GeneratedResumeResponse>('/api/resumes/generate', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }, { auth: true });
     },
   };
 }
