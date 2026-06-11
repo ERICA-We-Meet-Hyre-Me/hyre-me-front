@@ -287,12 +287,16 @@ export default function PortfolioEditor() {
     setMessage(null);
 
     try {
-      const saved = await apiService.uploadResumeFile(resumeFile);
-      setPortfolioProfile(saved);
+      // 1. 백엔드로 파일 전송 (여기서 AI 분석 및 DB 저장이 일어남)
+      await apiService.uploadResumeFile(resumeFile);
+      
+      // 2. AI가 DB에 저장한 '경험, 자격증, 어학성적'을 화면에 반영하기 위해 전체 다시 불러오기
+      await loadPortfolio();
+      
       setResumeFile(null);
-      setMessage('이력서 파일이 업로드되었습니다.');
+      setMessage('이력서 분석이 완료되어 데이터가 추가되었습니다!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '이력서 파일을 업로드하지 못했습니다.');
+      setError(err instanceof Error ? err.message : '이력서 분석에 실패했습니다.');
     } finally {
       setIsUploadingFile(false);
     }
@@ -507,7 +511,7 @@ export default function PortfolioEditor() {
             className="inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-3 font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             <Upload className="w-4 h-4" />
-            {isUploadingFile ? '업로드 중...' : '업로드'}
+            {isUploadingFile ? 'AI가 이력서를 분석 중입니다 (최대 1분 소요)...' : 'AI 분석 및 업로드'}
           </button>
         </div>
       </section>
