@@ -224,6 +224,7 @@ export interface ResumeCompanyOption {
 export interface GenerateResumeRequest {
   company_id: number;
   additional_prompt?: string | null;
+  language?: string;
 }
 
 interface ApiErrorPayload {
