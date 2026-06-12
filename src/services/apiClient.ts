@@ -221,6 +221,11 @@ export interface ResumeCompanyOption {
   deadline_text: string | null;
 }
 
+export interface GenerateResumeRequest {
+  company_id: number;
+  additional_prompt?: string | null;
+}
+
 interface ApiErrorPayload {
   detail?: JsonValue;
   message?: string;
