@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Building2, Loader2 } from 'lucide-react';
+import { Sparkles, Building2, Loader2, Globe } from 'lucide-react';
 import { apiService, CompanyResponse } from '../services/api';
 
 export default function ResumeGenerator() {
@@ -8,6 +8,7 @@ export default function ResumeGenerator() {
   const [companies, setCompanies] = useState<CompanyResponse[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | ''>('');
   const [additionalPrompt, setAdditionalPrompt] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('한국어');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,9 +31,10 @@ export default function ResumeGenerator() {
 
     try {
       // 백엔드 API 호출
-      const newResume = await apiService.generateResume({
+const newResume = await apiService.generateResume({
         company_id: Number(selectedCompanyId),
-        additional_prompt: additionalPrompt
+        additional_prompt: additionalPrompt,
+        language: selectedLanguage
       });
       
       // 생성이 완료되면 생성된 자소서 열람 페이지로 이동
@@ -72,6 +74,26 @@ export default function ResumeGenerator() {
             {companies.map(c => (
               <option key={c.id} value={c.id}>{c.name} ({c.role})</option>
             ))}
+          </select>
+        </div>
+        
+        {/* 출력 언어 선택 영역 */}
+        <div className="space-y-2">
+          <label className="block font-medium text-gray-700 flex items-center gap-2">
+            <Globe className="w-5 h-5" /> 출력 자소서 언어 선택
+          </label>
+          <select 
+            className="w-full border border-black p-3 bg-white"
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value)}
+            disabled={isGenerating}
+          >
+            <option value="한국어">한국어 (Default)</option>
+            <option value="영어">영어 (English)</option>
+            <option value="일본어">일본어 (日本語)</option>
+            <option value="중국어">중국어 (中文)</option>
+            <option value="아랍어">아랍어 (العربية)</option>
+            <option value="스페인어">스페인어 (Español)</option>
           </select>
         </div>
 
