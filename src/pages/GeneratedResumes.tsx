@@ -90,7 +90,17 @@ export default function GeneratedResumes() {
                   </span>
                 </div>
                 <h3 className="font-serif font-bold text-lg mb-2 line-clamp-2">{resume.title}</h3>
-                <div className="text-sm text-gray-600 mb-4">{resume.status ?? '상태 미설정'}</div>
+                <div className="text-sm mb-4">
+                  {resume.status === 'FAILED' ? (
+                    <span className="text-red-600 font-medium">
+                      생성 실패 (서버 오류로 인해 에러가 발생했습니다. 잠시 후 다시 시도해주세요.)
+                    </span>
+                  ) : resume.status === 'COMPLETED' ? (
+                    <span className="text-gray-600">생성 완료</span>
+                  ) : (
+                    <span className="text-gray-400">상태 미설정</span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 mt-auto pt-4">
                   <Calendar className="w-4 h-4" />
                   {resume.updated_at ?? resume.created_at ?? '-'}
