@@ -187,7 +187,7 @@ export default function CompanyEditor() {
                   value={form.name}
                   onChange={handleChange('name')}
                   className="w-full border border-black p-3 focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="예: 네이버"
+                  placeholder="예: 마이크로소프트"
                   required
                   disabled={isSaving || isDeleting}
                 />
