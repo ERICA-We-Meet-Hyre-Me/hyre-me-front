@@ -32,13 +32,81 @@
 }
 
 @media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .no-print {
     display: none !important;
   }
-  body {
-    @apply bg-white text-black;
+  
+  html, body {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: white;
   }
+  
   @page {
-    margin: 2cm;
+    size: A4;
+    margin: 20mm;
+  }
+  
+  /* 최상위 컨테이너 정리 */
+  body > * {
+    width: 100%;
+    height: auto;
+  }
+  
+  /* 모든 요소의 크기 제약 제거 */
+  div, section, article, main {
+    width: 100%;
+    max-height: none;
+    height: auto;
+  }
+  
+  /* 최대 너비 제거 */
+  .max-w-4xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .prose {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  /* 버튼 등 UI 요소 숨기기 */
+  button, nav {
+    display: none !important;
+  }
+  
+  /* 링크 스타일 */
+  a {
+    text-decoration: underline;
+    color: #000;
+  }
+  
+  /* 페이지 나누기 */
+  .prose > * {
+    page-break-inside: avoid;
+  }
+  
+  .prose > h1 {
+    page-break-after: avoid;
+    page-break-before: always;
+  }
+  
+  .prose > h1:first-child {
+    page-break-before: avoid;
+  }
+  
+  .prose > h2 {
+    page-break-after: avoid;
+    page-break-before: avoid;
   }
 }
