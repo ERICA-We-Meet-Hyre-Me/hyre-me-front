@@ -22,7 +22,7 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="h-dvh flex overflow-hidden bg-white text-black">
+    <div className="h-dvh flex overflow-hidden bg-white text-black print:h-auto print:overflow-visible print:block">
       {/* Sidebar */}
       <aside className="w-64 border-r border-black flex h-full flex-col overflow-hidden no-print">
         <div className="h-16 flex items-center px-6 border-b border-black">
@@ -65,9 +65,9 @@ export default function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex min-h-0 min-w-0 flex-col overflow-hidden">
-        <div className="flex-1 min-h-0 overflow-y-auto p-8">
-          <div className="max-w-5xl mx-auto">
+      <main className="flex-1 flex min-h-0 min-w-0 flex-col overflow-hidden print:block print:overflow-visible print:h-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto p-8 print:overflow-visible print:h-auto print:p-0">
+          <div className="max-w-5xl mx-auto print:max-w-none print:m-0">
             <Outlet />
           </div>
         </div>
