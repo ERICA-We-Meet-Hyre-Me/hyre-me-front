@@ -62,7 +62,6 @@ export default function ResumeViewer() {
       const content = `# ${resume.title}
 
 **회사**: ${companyName}
-**상태**: ${resume.status ?? '-'}
 **생성일**: ${resume.created_at ?? '-'}
 **수정일**: ${resume.updated_at ?? '-'}
 
@@ -148,7 +147,6 @@ ${resume.content_markdown || '작성된 내용이 없습니다.'}
               <div className="text-sm text-gray-500 mb-2">{companyName}</div>
               <h1 className="text-3xl font-serif font-bold">{resume.title}</h1>
               <div className="mt-4 text-sm text-gray-600 space-y-1">
-                <div>상태: {resume.status ?? '-'}</div>
                 <div>생성일: {resume.created_at ?? '-'}</div>
                 <div>수정일: {resume.updated_at ?? '-'}</div>
               </div>

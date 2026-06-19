@@ -82,7 +82,6 @@ export default function CompanyList() {
                 <th className="p-4 font-serif font-bold">기업명</th>
                 <th className="p-4 font-serif font-bold">지원 직무</th>
                 <th className="p-4 font-serif font-bold">마감일</th>
-                <th className="p-4 font-serif font-bold">상태</th>
                 <th className="p-4 font-serif font-bold text-right">관리</th>
               </tr>
             </thead>
@@ -98,11 +97,6 @@ export default function CompanyList() {
                   </td>
                   <td className="p-4">{company.role}</td>
                   <td className="p-4">{company.deadline_text ?? '-'}</td>
-                  <td className="p-4">
-                    <span className="inline-block px-2 py-1 border border-black text-xs">
-                      {company.status ?? '미설정'}
-                    </span>
-                  </td>
                   <td className="p-4 text-right">
                     <Link to={`/companies/${company.id}`} className="text-sm font-medium hover:underline mr-4">
                       편집

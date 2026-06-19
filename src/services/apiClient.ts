@@ -165,7 +165,6 @@ export interface CompanyCreateRequest {
   name: string;
   role: string;
   deadline_text?: string | null;
-  status?: string | null;
   job_posting_url?: string | null;
   requirements?: string | null;
   preferences?: string | null;
@@ -176,7 +175,6 @@ export interface CompanyUpdateRequest {
   name?: string | null;
   role?: string | null;
   deadline_text?: string | null;
-  status?: string | null;
   job_posting_url?: string | null;
   requirements?: string | null;
   preferences?: string | null;
@@ -185,7 +183,6 @@ export interface CompanyUpdateRequest {
 
 export interface CompanyResponse extends Required<Pick<CompanyCreateRequest, 'name' | 'role'>> {
   deadline_text: string | null;
-  status: string | null;
   job_posting_url: string | null;
   requirements: string | null;
   preferences: string | null;
@@ -217,7 +214,6 @@ export interface ResumeCompanyOption {
   id: number;
   name: string;
   role: string;
-  status: string | null;
   deadline_text: string | null;
 }
 

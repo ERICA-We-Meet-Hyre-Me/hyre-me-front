@@ -7,7 +7,6 @@ type CompanyFormState = {
   name: string;
   role: string;
   deadline_text: string;
-  status: string;
   job_posting_url: string;
   requirements: string;
   preferences: string;
@@ -18,7 +17,6 @@ const EMPTY_FORM: CompanyFormState = {
   name: '',
   role: '',
   deadline_text: '',
-  status: 'PREPARING',
   job_posting_url: '',
   requirements: '',
   preferences: '',
@@ -34,7 +32,6 @@ function toFormState(company: CompanyResponse | null): CompanyFormState {
     name: company.name ?? '',
     role: company.role ?? '',
     deadline_text: company.deadline_text ?? '',
-    status: company.status ?? '',
     job_posting_url: company.job_posting_url ?? '',
     requirements: company.requirements ?? '',
     preferences: company.preferences ?? '',
@@ -116,7 +113,6 @@ export default function CompanyEditor() {
       name: form.name.trim(),
       role: form.role.trim(),
       deadline_text: toNullable(form.deadline_text),
-      status: toNullable(form.status),
       job_posting_url: toNullable(form.job_posting_url),
       requirements: toNullable(form.requirements),
       preferences: toNullable(form.preferences),
@@ -213,23 +209,10 @@ export default function CompanyEditor() {
                 <label className="block text-sm font-medium mb-2" htmlFor="deadline_text">채용 마감일</label>
                 <input
                   id="deadline_text"
-                  type="text"
+                  type="datetime-local"
                   value={form.deadline_text}
                   onChange={handleChange('deadline_text')}
                   className="w-full border border-black p-3 focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="예: 2026-05-01"
-                  disabled={isSaving || isDeleting}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" htmlFor="status">상태</label>
-                <input
-                  id="status"
-                  type="text"
-                  value={form.status}
-                  onChange={handleChange('status')}
-                  className="w-full border border-black p-3 focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="PREPARING"
                   disabled={isSaving || isDeleting}
                 />
               </div>
