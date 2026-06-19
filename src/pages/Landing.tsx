@@ -17,7 +17,7 @@ export default function Landing() {
           당신의 경험을<br />가장 완벽한 언어로.
         </h1>
         <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl">
-          AI 에이전트가 당신의 포트폴리오와 목표 기업의 공고를 분석하여, 
+          AI 에이전트가 당신의 포트폴리오와 목표 기업의 공고를 분석하여,<br />
           가장 적합한 맞춤형 자기소개서를 마크다운 형태로 생성합니다.
         </p>
         
