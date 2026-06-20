@@ -53,7 +53,7 @@ const newResume = await apiService.generateResume({
           <Sparkles className="w-8 h-8" />
           AI 맞춤형 자소서 생성
         </h1>
-        <p className="text-gray-600 mt-2">등록한 포트폴리오와 기업 인재상을 융합하여 서류 합격 자기소개서를 생성합니다.</p>
+        <p className="text-gray-600 mt-2">등록한 포트폴리오와 기업정보를 융합하여 자기소개서를 생성합니다.</p>
       </header>
 
       <div className="border border-black p-8 space-y-6 bg-white">
