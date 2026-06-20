@@ -12,13 +12,13 @@ export default function Landing() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
         <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6 tracking-tight">
           당신의 경험을<br />가장 완벽한 언어로.
         </h1>
         <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl">
-          AI 에이전트가 당신의 포트폴리오와 목표 기업의 공고를 분석하여,<br />
-          가장 적합한 맞춤형 자기소개서를 마크다운 형태로 생성합니다.
+          AI가 당신의 포트폴리오와 목표 기업의 공고를 분석하여,<br />
+          가장 적합한 맞춤형 자기소개서를 작성해 드립니다.
         </p>
         
         <Link to="/signup" className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white text-lg font-medium hover:bg-gray-800 transition-colors">
