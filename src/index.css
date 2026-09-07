@@ -31,6 +31,119 @@
   }
 }
 
+@keyframes resume-stream-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes resume-stream-cursor-blink {
+  0%, 45% {
+    opacity: 1;
+  }
+  46%, 100% {
+    opacity: 0;
+  }
+}
+
+.resume-stream-preview {
+  animation: resume-stream-slide-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.resume-stream-backdrop {
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.resume-route-transition {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.resume-route-transition-exiting {
+  pointer-events: none;
+  animation: resume-route-backdrop-out 720ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.resume-route-transition-exiting .resume-route-transition-paper {
+  animation: resume-paper-leave 720ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes resume-route-backdrop-out {
+  from {
+    background: rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  to {
+    background: rgba(255, 255, 255, 0);
+    -webkit-backdrop-filter: blur(0);
+    backdrop-filter: blur(0);
+  }
+}
+
+@keyframes resume-paper-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-32px) scale(0.98);
+  }
+}
+
+.resume-stream-paper {
+  box-sizing: border-box;
+  width: min(640px, calc((100dvh - 2rem) * 210 / 297), 100%);
+  height: min(760px, calc(100dvh - 2rem));
+  overflow: hidden;
+}
+
+.resume-stream-text-scroll {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.resume-stream-text-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.resume-stream-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.15em;
+  margin-left: 3px;
+  vertical-align: -0.16em;
+  background: #000;
+  animation: resume-stream-cursor-blink 920ms steps(1, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resume-stream-preview,
+  .resume-stream-cursor {
+    animation: none;
+  }
+}
+
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;

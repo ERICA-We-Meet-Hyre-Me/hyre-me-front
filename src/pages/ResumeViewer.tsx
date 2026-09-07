@@ -42,6 +42,9 @@ export default function ResumeViewer() {
         setError(err instanceof Error ? err.message : '자소서 정보를 불러오지 못했습니다.');
       } finally {
         setIsLoading(false);
+        window.setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('resume-viewer-ready', { detail: { id: resumeId } }));
+        }, 0);
       }
     };
 

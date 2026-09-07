@@ -1,11 +1,20 @@
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { FileText, FileOutput, Building2, LayoutDashboard, User, LogOut, FileOutputIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
+interface ResumeTransitionState {
+  resumeTransition?: boolean;
+  previewContent?: string;
+}
 
 export default function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const transitionState = location.state as ResumeTransitionState | null;
+  const isResumeTransition = location.pathname.startsWith('/resumes/') && transitionState?.resumeTransition === true;
+  const [isTransitionExiting, setIsTransitionExiting] = useState(false);
 
   const navigation = [
     { name: '대시보드', href: '/dashboard', icon: LayoutDashboard },
@@ -20,6 +29,37 @@ export default function MainLayout() {
     logout();
     navigate('/');
   };
+
+  useEffect(() => {
+    if (!isResumeTransition) {
+      setIsTransitionExiting(false);
+      return;
+    }
+
+    setIsTransitionExiting(false);
+    let exitTimer: number | null = null;
+    const handleResumeViewerReady = (event: Event) => {
+      const readyEvent = event as CustomEvent<{ id?: number }>;
+      const currentId = Number(location.pathname.split('/').pop());
+
+      if (readyEvent.detail?.id !== undefined && readyEvent.detail.id !== currentId) {
+        return;
+      }
+
+      setIsTransitionExiting(true);
+      exitTimer = window.setTimeout(() => {
+        navigate(location.pathname, { replace: true, state: null });
+      }, 720);
+    };
+
+    window.addEventListener('resume-viewer-ready', handleResumeViewerReady);
+    return () => {
+      window.removeEventListener('resume-viewer-ready', handleResumeViewerReady);
+      if (exitTimer !== null) {
+        window.clearTimeout(exitTimer);
+      }
+    };
+  }, [isResumeTransition, location.pathname, navigate]);
 
   return (
     <div className="h-dvh flex overflow-hidden bg-white text-black print:h-auto print:overflow-visible print:block">
@@ -65,12 +105,33 @@ export default function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex min-h-0 min-w-0 flex-col overflow-hidden print:block print:overflow-visible print:h-auto">
+      <main className="relative flex-1 flex min-h-0 min-w-0 flex-col overflow-hidden print:block print:overflow-visible print:h-auto">
         <div className="flex-1 min-h-0 overflow-y-auto p-8 print:overflow-visible print:h-auto print:p-0">
           <div className="max-w-5xl mx-auto print:max-w-none print:m-0">
             <Outlet />
           </div>
         </div>
+        {isResumeTransition && (
+          <div
+            className={`resume-route-transition ${isTransitionExiting ? 'resume-route-transition-exiting' : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="완성된 자소서로 이동 중"
+          >
+            <article className="resume-stream-paper resume-route-transition-paper flex flex-col border border-black bg-white p-6 sm:p-10">
+              <div className="flex items-start justify-between gap-4 border-b border-black pb-5">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-gray-500">HYRE-ME / AI DRAFT</p>
+                  <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">자기소개서</h2>
+                </div>
+                <span className="pt-1 text-right text-xs text-gray-500">생성 완료</span>
+              </div>
+              <div className="resume-stream-text-scroll mt-8 min-h-0 flex-1 whitespace-pre-wrap break-words text-[15px] leading-8 text-gray-800 sm:text-base">
+                {transitionState?.previewContent || '작성된 내용이 없습니다.'}
+              </div>
+            </article>
+          </div>
+        )}
       </main>
     </div>
   );

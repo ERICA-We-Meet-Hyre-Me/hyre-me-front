@@ -1,7 +1,41 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sparkles, Building2, Loader2, Globe } from 'lucide-react';
 import { apiService, CompanyResponse } from '../services/api';
+import type { ResumeGenerationStreamEvent } from '../services/resumeApi';
+
+function getStreamStatusLabel(event: ResumeGenerationStreamEvent & { type: 'status' }) {
+  const status = event.data.status?.toUpperCase();
+
+  if (status === 'SAVING' || event.data.stage === 'saving') {
+    return '생성된 내용을 저장하고 있습니다';
+  }
+  if (status === 'GENERATING' || event.data.stage === 'started') {
+    return 'AI가 자소서를 작성하고 있습니다';
+  }
+
+  return event.data.stage || event.data.status || 'AI가 자소서를 작성하고 있습니다';
+}
+
+function StreamingText({ content, isGenerating }: { content: string; isGenerating: boolean }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const contentElement = contentRef.current;
+    if (contentElement) {
+      contentElement.scrollTop = contentElement.scrollHeight;
+    }
+  }, [content]);
+
+  return (
+    <div ref={contentRef} className="resume-stream-text-scroll mt-8 min-h-0 flex-1 whitespace-pre-wrap break-words text-[15px] leading-8 text-gray-800 sm:text-base">
+      {content || (
+        <span className="text-gray-400">AI가 첫 문장을 준비하고 있습니다...</span>
+      )}
+      {isGenerating && <span className="resume-stream-cursor" aria-hidden="true" />}
+    </div>
+  );
+}
 
 export default function ResumeGenerator() {
   const navigate = useNavigate();
@@ -11,12 +45,58 @@ export default function ResumeGenerator() {
   const [selectedLanguage, setSelectedLanguage] = useState('한국어');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showStreamingPreview, setShowStreamingPreview] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [completedResumeId, setCompletedResumeId] = useState<number | null>(null);
+  const [streamStatus, setStreamStatus] = useState('AI가 자소서를 작성하고 있습니다');
+  const streamStartedRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  // Reveal from one shared cursor. The larger the backlog, the more characters a frame consumes.
+  useEffect(() => {
+    if (!isGenerating) return;
+    let animationFrame = 0;
+
+    const revealFrame = () => {
+      setDisplayedContent((current) => {
+        if (current === streamingContent) return current;
+
+        const pendingCharacters = Array.from(streamingContent.slice(current.length));
+        const backlog = pendingCharacters.length;
+        const charactersPerFrame = backlog > 400 ? 16 : backlog > 120 ? 8 : backlog > 32 ? 4 : backlog > 8 ? 2 : 1;
+
+        return current + pendingCharacters.slice(0, charactersPerFrame).join('');
+      });
+
+      animationFrame = window.requestAnimationFrame(revealFrame);
+    };
+
+    animationFrame = window.requestAnimationFrame(revealFrame);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [streamingContent, isGenerating]);
+
+  useEffect(() => {
+    if (completedResumeId !== null && displayedContent === streamingContent) {
+      navigate(`/resumes/${completedResumeId}`, {
+        state: {
+          resumeTransition: true,
+          previewContent: displayedContent,
+        },
+      });
+    }
+  }, [completedResumeId, displayedContent, streamingContent, navigate]);
 
   // 1. 페이지 켜지면 내가 등록해둔 목표 기업 목록 가져오기
   useEffect(() => {
     apiService.listCompanies()
       .then(setCompanies)
       .catch(() => setError('기업 목록을 불러오지 못했습니다.'));
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
   }, []);
 
   // 2. 버튼 눌렀을 때 백엔드로 요청 보내기
@@ -28,21 +108,66 @@ export default function ResumeGenerator() {
 
     setIsGenerating(true);
     setError(null);
+    setShowStreamingPreview(false);
+    setStreamingContent('');
+    setDisplayedContent('');
+    setCompletedResumeId(null);
+    setStreamStatus('AI가 자소서를 작성하고 있습니다');
+    streamStartedRef.current = false;
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     try {
-      // 백엔드 API 호출
-const newResume = await apiService.generateResume({
-        company_id: Number(selectedCompanyId),
-        additional_prompt: additionalPrompt,
-        language: selectedLanguage
-      });
+      const newResume = await apiService.generateResumeStream(
+        {
+          company_id: Number(selectedCompanyId),
+          additional_prompt: additionalPrompt,
+          language: selectedLanguage,
+        },
+        (event) => {
+          if (event.type === 'status') {
+            streamStartedRef.current = true;
+            setShowStreamingPreview(true);
+            setStreamStatus(getStreamStatusLabel(event));
+            return;
+          }
+
+          if (event.type === 'content') {
+            streamStartedRef.current = true;
+            setShowStreamingPreview(true);
+            if (event.data.replace) {
+              setStreamingContent(event.data.delta);
+              setDisplayedContent('');
+            } else {
+              setStreamingContent((current) => current + event.data.delta);
+            }
+            return;
+          }
+
+          if (event.type === 'complete') {
+            setStreamStatus('저장 완료');
+          }
+        },
+        abortController.signal,
+      );
       
-      // 생성이 완료되면 생성된 자소서 열람 페이지로 이동
-      navigate(`/resumes/${newResume.id}`);
+      setCompletedResumeId(newResume.id);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
+
+      if (streamStartedRef.current) {
+        setStreamStatus('생성 중 오류가 발생했습니다');
+        setShowStreamingPreview(false);
+      }
       setError(err instanceof Error ? err.message : 'AI 자소서 작성 중 오류가 발생했습니다.');
-    } finally {
       setIsGenerating(false);
+    } finally {
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   };
 
@@ -56,7 +181,32 @@ const newResume = await apiService.generateResume({
         <p className="text-gray-600 mt-2">등록한 포트폴리오와 기업정보를 융합하여 자기소개서를 생성합니다.</p>
       </header>
 
-      <div className="border border-black p-8 space-y-6 bg-white">
+      {showStreamingPreview && (
+        <section
+          className="resume-stream-backdrop resume-stream-preview absolute inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-live="polite"
+          aria-label="AI 자소서 생성 미리보기"
+        >
+          <article className="resume-stream-paper flex flex-col border border-black bg-white p-6 sm:p-10">
+            <div className="flex items-start justify-between gap-4 border-b border-black pb-5">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-gray-500">HYRE-ME / AI DRAFT</p>
+                <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">자기소개서</h2>
+              </div>
+              <div className="flex shrink-0 items-center gap-2 pt-1 text-right text-xs text-gray-500">
+                {isGenerating && <span className="h-2 w-2 animate-pulse rounded-full bg-black" aria-hidden="true" />}
+                {streamStatus}
+              </div>
+            </div>
+
+            <StreamingText content={displayedContent} isGenerating={isGenerating} />
+          </article>
+        </section>
+      )}
+
+      <div className={`border border-black bg-white p-8 space-y-6 transition-opacity duration-300 ${isGenerating ? 'opacity-50' : ''}`}>
         {error && <div className="p-4 bg-red-50 text-red-600 border border-red-200">{error}</div>}
 
         {/* 기업 선택 영역 */}
@@ -111,6 +261,7 @@ const newResume = await apiService.generateResume({
 
         {/* 생성 버튼 */}
         <button
+          type="button"
           onClick={handleGenerate}
           disabled={isGenerating || !selectedCompanyId}
           className="w-full flex items-center justify-center gap-2 bg-black text-white px-8 py-4 text-lg font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"

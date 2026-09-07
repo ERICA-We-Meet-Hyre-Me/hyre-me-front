@@ -363,6 +363,18 @@ export class ApiClient {
     return headers;
   }
 
+  private createApiError(response: Response, body: JsonValue | undefined) {
+    const payload = isRecord(body) ? (body as ApiErrorPayload) : undefined;
+    const message =
+      extractMessage(payload?.detail as JsonValue | undefined) ||
+      extractMessage(body) ||
+      payload?.message ||
+      payload?.error ||
+      `요청에 실패했습니다. (${response.status})`;
+
+    return new ApiError(message, response.status, body);
+  }
+
   private async refreshTokens(): Promise<boolean> {
     if (this.refreshPromise) {
       return this.refreshPromise;
@@ -449,6 +461,38 @@ export class ApiClient {
     }
 
     return body as T;
+  }
+
+  async requestStream(
+    path: string,
+    options: RequestInit = {},
+    config: ApiRequestConfig = {},
+  ): Promise<Response> {
+    const response = await fetch(buildUrl(path), {
+      ...options,
+      headers: this.buildHeaders(options, config),
+    });
+
+    if (response.ok) {
+      return response;
+    }
+
+    const body = await readResponseBody(response);
+    const shouldRetryOnUnauthorized = config.retryOnUnauthorized !== false;
+
+    if (response.status === 401 && shouldRetryOnUnauthorized) {
+      const refreshed = await this.refreshTokens();
+      if (refreshed) {
+        return this.requestStream(path, options, {
+          ...config,
+          retryOnUnauthorized: false,
+        });
+      }
+
+      this.notifyAuthFailure();
+    }
+
+    throw this.createApiError(response, body);
   }
 
   async requestNoContent(
