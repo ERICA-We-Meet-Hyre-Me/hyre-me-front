@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function MyPage() {
-  const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
+  const { user, updateProfile, deleteAccount } = useAuth();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleteConfirmed, setIsDeleteConfirmed] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -23,6 +30,43 @@ export default function MyPage() {
   const joinDate = user?.created_at ? new Date(user.created_at).toLocaleDateString('ko-KR') : '-';
 
   const hasChanges = user ? name.trim() !== user.name || password.trim().length > 0 : false;
+
+  const closeDeleteModal = () => {
+    if (isDeleting) {
+      return;
+    }
+
+    setIsDeleteModalOpen(false);
+    setDeletePassword('');
+    setIsDeleteConfirmed(false);
+    setDeleteError(null);
+  };
+
+  const handleDeleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!deletePassword.trim()) {
+      setDeleteError('현재 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    if (!isDeleteConfirmed) {
+      setDeleteError('탈퇴 진행 동의 항목을 확인해주세요.');
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deleteAccount(deletePassword);
+      navigate('/', { replace: true });
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : '회원 탈퇴에 실패했습니다.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +198,18 @@ export default function MyPage() {
             />
           </div>
 
-          <div className="flex justify-end pt-4">
+          <div className="flex items-center justify-between gap-4 pt-4">
+            <a
+              href="#account-deletion"
+              onClick={(e) => {
+                e.preventDefault();
+                setDeleteError(null);
+                setIsDeleteModalOpen(true);
+              }}
+              className="text-sm text-red-800 underline underline-offset-4 hover:text-red-950"
+            >
+              탈퇴하기
+            </a>
             <button
               type="submit"
               disabled={isSaving || !hasChanges}
@@ -165,6 +220,90 @@ export default function MyPage() {
           </div>
         </form>
       </div>
+
+      {isDeleteModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-account-title"
+        >
+          <div className="w-full max-w-md border border-black bg-white p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id="delete-account-title" className="font-serif text-xl font-bold">
+                  정말 탈퇴하시겠습니까?
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-gray-700">
+                  기업 정보와 자소서를 포함한 모든 정보가 삭제됩니다.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                disabled={isDeleting}
+                aria-label="탈퇴 모달 닫기"
+                className="text-2xl leading-none text-gray-500 hover:text-black disabled:cursor-not-allowed"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleDeleteAccount} className="mt-6 space-y-5">
+              {deleteError && (
+                <div className="border border-red-300 bg-red-50 p-3 text-sm text-red-800" role="alert">
+                  {deleteError}
+                </div>
+              )}
+
+              <div>
+                <label className="mb-2 block text-sm font-medium" htmlFor="deletePassword">
+                  현재 비밀번호
+                </label>
+                <input
+                  type="password"
+                  id="deletePassword"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="w-full border border-black p-3 focus:outline-none focus:ring-1 focus:ring-black"
+                  autoComplete="current-password"
+                  disabled={isDeleting}
+                  required
+                />
+              </div>
+
+              <label className="flex cursor-pointer items-start gap-2 text-sm leading-6">
+                <input
+                  type="checkbox"
+                  checked={isDeleteConfirmed}
+                  onChange={(e) => setIsDeleteConfirmed(e.target.checked)}
+                  disabled={isDeleting}
+                  className="mt-1 h-4 w-4 accent-black"
+                />
+                <span>네, 탈퇴를 진행하겠습니다</span>
+              </label>
+
+              <div className="flex justify-end gap-3 border-t border-black pt-5">
+                <button
+                  type="button"
+                  onClick={closeDeleteModal}
+                  disabled={isDeleting}
+                  className="border border-black px-4 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isDeleting || !isDeleteConfirmed || !deletePassword.trim()}
+                  className="bg-red-900 px-4 py-2 text-sm font-medium text-white hover:bg-red-950 disabled:cursor-not-allowed disabled:bg-gray-400"
+                >
+                  {isDeleting ? '탈퇴 처리 중...' : '탈퇴하기'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

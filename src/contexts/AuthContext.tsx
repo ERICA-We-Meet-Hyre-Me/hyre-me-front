@@ -9,6 +9,7 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<void>;
   refreshUser: () => Promise<UserResponse | null>;
   updateProfile: (data: { name?: string; password?: string }) => Promise<UserResponse>;
+  deleteAccount: (password: string) => Promise<void>;
   logout: () => void;
   error: string | null;
 }
@@ -114,6 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const updatedUser = await apiService.updateCurrentUser(data);
           syncCurrentUser(updatedUser);
           return updatedUser;
+        },
+        deleteAccount: async (password) => {
+          await apiService.deleteCurrentUser(password);
+          apiService.logout();
+          setUser(null);
+          setError(null);
         },
         logout,
         error,

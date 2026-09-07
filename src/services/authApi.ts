@@ -47,5 +47,16 @@ export function createAuthApi(client: ApiClient) {
         json: true,
       });
     },
+
+    async deleteCurrentUser(password: string): Promise<void> {
+      return client.requestNoContent('/api/auth/me', {
+        method: 'DELETE',
+        body: JSON.stringify({ password }),
+      }, {
+        auth: true,
+        json: true,
+        retryOnUnauthorized: false,
+      });
+    },
   };
 }
